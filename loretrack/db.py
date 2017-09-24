@@ -153,8 +153,39 @@ def scan_table(table_name):
     client = get_client()
     response = client.scan(TableName=table_name)
     print 'Found ' + str(response['Count']) + ' records.'
+    data = []
     for item in response['Items']:
-        print json.dumps(item, indent=4)
+        data.append(dynamodb_to_dict(item))
+    #print data
+    return data
+
+
+def dynamodb_to_dict(item):
+    item_dict = {}
+    if isinstance(item, unicode):
+        return item
+    for key, value in item.iteritems():
+        if key == 'S':
+            return str(value)
+        elif key == 'N':
+            return int(value)
+        elif key == 'M':
+            value_dict = {}
+            for k, v in value.iteritems():
+                value_dict[str(k)] = dynamodb_to_dict(v)
+            return value_dict
+        elif key == 'L':
+            value_list = []
+            for i in value:
+                value_list.append(dynamodb_to_dict(i))
+            return value_list
+        elif key == 'NULL':
+            if value is True:
+                return None
+        else:
+            value = dynamodb_to_dict(value)
+        item_dict[str(key)] = value
+    return item_dict
 
 
 def describe_table(table_name):
