@@ -1,6 +1,15 @@
 import ConfigParser
 import os
 
+LORETRACK_DIR = os.path.abspath(os.path.join(os.getenv("HOME"), '.loretrack/'))
+CONFIG_FILE = os.path.join(LORETRACK_DIR, 'config.cfg')
+config = ConfigParser.ConfigParser()
+config.read(CONFIG_FILE)
+
+
+def join_path(path1, path2):
+    return os.path.join(path1, path2)
+
 
 def get_section_name():
     """
@@ -42,9 +51,3 @@ class Flask_config():
     SECRET_KEY = get_option('SECRET_KEY')
 
     basedir = os.path.split(os.path.split(os.path.abspath(__file__))[0])[0]
-
-
-LORETRACK_DIR = os.path.abspath(os.path.join(os.getenv("HOME"), '.loretrack/'))
-CONFIG_FILE = os.path.join(LORETRACK_DIR, 'config.cfg')
-config = ConfigParser.ConfigParser()
-config.read(CONFIG_FILE)
