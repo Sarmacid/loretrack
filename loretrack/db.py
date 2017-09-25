@@ -1,8 +1,14 @@
 import boto3
 import config
 import json
+from datetime import datetime
+import dateutil.parser
+import uuid
 
-DATA_FILE = 'db.json'
+
+DATA_FILE = config.get_option('DATA_FILE')
+UPDATE_STRING = config.get_option('UPDATE_STRING')
+CREATE_STRING = config.get_option('CREATE_STRING')
 
 
 def schema():
@@ -49,19 +55,11 @@ def schema():
             'TableName': 'Characters',
             'KeySchema': [
                 {
-                    'AttributeName': 'id',
-                    'KeyType': 'HASH'
-                },
-                {
                     'AttributeName': 'name',
-                    'KeyType': 'RANGE'
+                    'KeyType': 'HASH'
                 }
             ],
             'AttributeDefinitions': [
-                {
-                    'AttributeName': 'id',
-                    'AttributeType': 'N'
-                },
                 {
                     'AttributeName': 'name',
                     'AttributeType': 'S'
@@ -141,12 +139,33 @@ def load_data_from_file():
     with open(path, 'r') as db_file:
         data = json.load(db_file)
 
-    resource = get_resource()
-
     for table_name in data:
-        table = resource.Table(table_name)
+        print 'Inserting ' + str(len(data[table_name])) + ' records in table "' + table_name + '".'
         for record in data[table_name]:
-            table.put_item(Item=record)
+            put_record(table_name, record)
+
+
+def put_record(table_name, record):
+    time = datetime.now().isoformat()
+    timestamps = {
+        CREATE_STRING: time,
+        UPDATE_STRING: time
+    }
+    my_uuid = str(uuid.uuid4())
+    if 'info' not in record:
+        record['info'] = timestamps
+        record['info']['uuid'] = my_uuid
+    else:
+        if CREATE_STRING not in record['info']:
+            record['info'].update(timestamps)
+        else:
+            record['info'][UPDATE_STRING] = timestamps[UPDATE_STRING]
+        if 'guid' not in record['info']:
+            record['info']['uuid'] = my_uuid
+
+    resource = get_resource()
+    table = resource.Table(table_name)
+    table.put_item(Item=record)
 
 
 def scan_table(table_name):
@@ -155,8 +174,8 @@ def scan_table(table_name):
     print 'Found ' + str(response['Count']) + ' records.'
     data = []
     for item in response['Items']:
+        #print item
         data.append(dynamodb_to_dict(item))
-    #print data
     return data
 
 
@@ -172,7 +191,10 @@ def dynamodb_to_dict(item):
         elif key == 'M':
             value_dict = {}
             for k, v in value.iteritems():
-                value_dict[str(k)] = dynamodb_to_dict(v)
+                if k == UPDATE_STRING or k == CREATE_STRING:
+                    value_dict[str(k)] = dateutil.parser.parse(dynamodb_to_dict(v))
+                else:
+                    value_dict[str(k)] = dynamodb_to_dict(v)
             return value_dict
         elif key == 'L':
             value_list = []
