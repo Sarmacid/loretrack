@@ -168,6 +168,13 @@ def put_record(table_name, record):
     table.put_item(Item=record)
 
 
+def get_record(table_name, string):
+    client = get_client()
+    key = schema()[0]['AttributeDefinitions'][0]
+    response = client.get_item(TableName=table_name, Key={key['AttributeName']: {key['AttributeType']: string}})
+    print json.dumps(response, indent=4)
+
+
 def scan_table(table_name):
     client = get_client()
     response = client.scan(TableName=table_name)
