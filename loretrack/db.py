@@ -4,6 +4,7 @@ import json
 from datetime import datetime
 import dateutil.parser
 import uuid
+import models
 
 
 DATA_FILE = config.get_option('DATA_FILE')
@@ -107,25 +108,37 @@ def delete_all_tables():
         delete_table(table_name)
 
 
-def create_table(table_schema):
+def create_table(table):
     client = get_client()
+
     try:
         client.create_table(
-            TableName=table_schema['TableName'],
-            KeySchema=table_schema['KeySchema'],
-            AttributeDefinitions=table_schema['AttributeDefinitions'],
-            ProvisionedThroughput=table_schema['ProvisionedThroughput']
+            TableName=table.TableName,
+            KeySchema=table.KeySchema,
+            AttributeDefinitions=table.AttributeDefinitions,
+            ProvisionedThroughput=table.ProvisionedThroughput
         )
-        print 'Created table "' + table_schema['TableName'] + '"'
+        print 'Created table "' + table.TableName + '"'
         return True
     except client.exceptions.ResourceInUseException:
-        print 'Table "' + table_schema['TableName'] + '" already exists.'
+        print 'Table "' + table.TableName + '" already exists.'
         return False
 
 
 def create_all_tables():
-    for table_name in schema():
-        create_table(table_name)
+    tables = get_tables_from_model()
+    for table in tables:
+        create_table(table)
+
+
+def get_tables_from_model():
+    model = models.Models()
+    tables = []
+    for attribute in dir(model):
+        my_class = getattr(model, attribute)
+        if callable(my_class) and not attribute.startswith("__"):
+            tables.append(my_class())
+    return tables
 
 
 def init_db():
@@ -181,7 +194,6 @@ def scan_table(table_name):
     print 'Found ' + str(response['Count']) + ' records.'
     data = []
     for item in response['Items']:
-        #print item
         data.append(dynamodb_to_dict(item))
     return data
 
