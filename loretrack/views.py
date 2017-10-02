@@ -1,6 +1,7 @@
 from . import app
 from flask import render_template
 import db
+import models
 
 
 @app.route('/')
@@ -18,8 +19,9 @@ def locations():
 
 @app.route('/location/<location_name>')
 def location(location_name):
-    #location = db.scan_table('Location')
-    #print locations
+    Locations = models.Models().Locations()
+    location = db.get_record(Locations, location_name)
+    print location
     return render_template('location.html', location=location)
 
 

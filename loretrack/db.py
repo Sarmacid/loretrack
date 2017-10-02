@@ -176,16 +176,25 @@ def put_record(table_name, record):
         if 'guid' not in record['info']:
             record['info']['uuid'] = my_uuid
 
+    for field in record:
+        if isinstance(record[field], unicode) or isinstance(record[field], str):
+            record[field] = record[field].lower()
+
     resource = get_resource()
     table = resource.Table(table_name)
     table.put_item(Item=record)
 
 
-def get_record(table_name, string):
+def get_record(table, string):
     client = get_client()
+    string = string.lower()
     key = schema()[0]['AttributeDefinitions'][0]
-    response = client.get_item(TableName=table_name, Key={key['AttributeName']: {key['AttributeType']: string}})
-    print json.dumps(response, indent=4)
+    response = client.get_item(TableName=table.TableName, Key={key['AttributeName']: {key['AttributeType']: string}})
+    record = dynamodb_to_dict(response['Item'])
+    for field in record:
+        if isinstance(record[field], unicode) or isinstance(record[field], str):
+            record[field] = record[field].title()
+    return record
 
 
 def scan_table(table_name):

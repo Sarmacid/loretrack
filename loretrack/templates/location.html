@@ -7,11 +7,33 @@
         <h1 class="title">
             Loretrack
         </h1>
-
-        {% for location in locations %}
+        <h2 class="title">
             {{ location.location_name }}
-            </br>
-        {% endfor %}
+        </h2>
+        <table>
+            {% for field, value in location.info.items() %}
+                <tr>
+                    <td>
+                        <span style="font-weight:bold">{{ field }}</span>
+                    </td>
+                    <td>
+                        {% if value is iterable and value is not string %}
+                            {% if (value | count) == 1 %}
+                                {{ value[0] }}.
+                            {% elif value > 1 %}
+                                {% for item in range(value | count - 1) %}
+                                    {{ value[item] }},
+                                {% endfor %}
+                                {{ value[value | count - 1] }}.
+                            {% else %}
+                            {% endif %}
+                        {% else %}
+                            <span>{{ value }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
         </div>
     </body>
 </html>
