@@ -11,27 +11,21 @@
             {{ location.location_name }}
         </h2>
         <table>
-            {% for field, value in location.info.items() %}
-                <tr>
-                    <td>
-                        <span style="font-weight:bold">{{ field }}</span>
-                    </td>
-                    <td>
-                        {% if value is iterable and value is not string %}
-                            {% if (value | count) == 1 %}
-                                {{ value[0] }}.
-                            {% elif value > 1 %}
-                                {% for item in range(value | count - 1) %}
-                                    {{ value[item] }},
-                                {% endfor %}
-                                {{ value[value | count - 1] }}.
+            {% for field, value in location.info.items() | sort() %}
+                    <tr>
+                        <td>
+                            <span style="font-weight:bold">{{ field }}</span>
+                        </td>
+                        <td>
+                            {% if field == 'Sublocations' %}
+                                <span>{{ value }}</span>
+                            {% elif value is iterable and value is not string and value | count > 0 %}
+                                <span>{{ value | join(', ') }}</span>.
                             {% else %}
+                                <span>{{ value }}</span>
                             {% endif %}
-                        {% else %}
-                            <span>{{ value }}</span>
-                        {% endif %}
-                    </td>
-                </tr>
+                        </td>
+                    </tr>
             {% endfor %}
         </table>
         </div>

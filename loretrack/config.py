@@ -1,9 +1,9 @@
-import ConfigParser
+import configparser
 import os
 
 LORETRACK_DIR = os.path.abspath(os.path.join(os.getenv("HOME"), '.loretrack/'))
 CONFIG_FILE = os.path.join(LORETRACK_DIR, 'config.cfg')
-config = ConfigParser.ConfigParser()
+config = configparser.ConfigParser()
 config.read(CONFIG_FILE)
 
 
@@ -38,7 +38,7 @@ def check_config_file():
     Check if the config file exists, exits otherwise.
     """
     if not os.path.isfile(CONFIG_FILE):
-        print 'Config file not found. Exiting...'
+        print('Config file not found. Exiting...')
         exit()
 
 

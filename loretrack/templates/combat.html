@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+    <p>
+        Choose characters:
+        <br/>
+        <form>
+            {% for character in characters %}
+                <label class="topcoat-checkbox">
+                    <input type="checkbox" name="players" value="{{ character.name }}">
+                    <div class="topcoat-checkbox__checkmark"></div>
+                    {{ character.name }}
+                </label>
+                <br/>
+            {% endfor %}
+        </form>
+    </p>
+{% endblock %}
