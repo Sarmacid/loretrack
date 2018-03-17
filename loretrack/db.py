@@ -87,5 +87,12 @@ def load_data_from_file():
 
 
 def get_characters(c_id):
-    characters = model.Character().query(c_id)
-    return characters
+    return model.Character().query(c_id)
+
+
+def get_single_character(c_id, pc_id):
+    return model.Character().get(c_id, pc_id)
+
+
+def get_monsters():
+    return model.Monster().scan()

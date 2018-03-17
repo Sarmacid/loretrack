@@ -1,6 +1,6 @@
 from .loretrack import app
-from . import db
-from flask import render_template
+from . import db, config
+from flask import render_template, jsonify
 #import db
 #import models
 
@@ -27,10 +27,18 @@ def location(location_name):
 
 @app.route('/combat')
 def combat():
-    c_id = 'c3b596b7-0c45-43ea-bdcd-b374d2ee7b0e'
+    c_id = config.get_option('CAMPAIGN_ID')
     characters = db.get_characters(c_id)
-    return render_template('combat.html', title='Combat', characters=characters)
+    monsters = db.get_monsters()
 
+    return render_template('combat.html', title='Combat', characters=characters, monsters=monsters)
+
+
+@app.route('/character/<pc_id>')
+def view_character(pc_id):
+    c_id = config.get_option('CAMPAIGN_ID')
+    character = db.get_single_character(c_id, pc_id)
+    return jsonify(character.to_dict())
 
 @app.errorhandler(404)
 def page_not_found(e):

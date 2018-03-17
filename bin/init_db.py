@@ -9,6 +9,12 @@ NAME_STR = 'name'
 PLAYER_STR = 'player'
 RACE_STR = 'race'
 CLASSES_STR = 'classes'
+STR_SCORE = 'str'
+DEX_SCORE = 'dex'
+CON_SCORE = 'con'
+INT_SCORE = 'int'
+WIS_SCORE = 'wis'
+CHA_SCORE = 'cha'
 
 
 def get_tables():
@@ -32,35 +38,46 @@ def add_data():
     data = {
         "monster": [
             {
-                "m_id": "e3b596b7-0c45-43ea-bdcd-b374d2ee7b0e",
+                "m_id": "a3b596b7-0c45-43ea-bdcd-b374d2ee7b0e",
                 "name": "Vampire"
+            },
+            {
+                "m_id": "b3b596b7-0c45-43ea-bdcd-b374d2ee7b0e",
+                "name": "Wolf"
             }
         ],
         "character": [
             {
-                "pc_id": "d3b596b7-0c45-43ea-bdcd-b374d2ee7b0e",
-                "c_id": "c3b596b7-0c45-43ea-bdcd-b374d2ee7b0e",
+                "pc_id": "a3b596b7-0c45-43ea-bdcd-b374d2ee7b0e",
+                "c_id": "a3b596b7-0c45-43ea-bdcd-b374d2ee7b0e",
                 "name": "Sarmacid",
                 "race": "Elf",
                 "classes": {
                     'Paladin': 1
                 },
-                "player": "Me"
+                "player": "Me",
+                "stats": {
+                    "str": 12,
+                    "dex": 12
+                }
             },
             {
                 "pc_id": "b3b596b7-0c45-43ea-bdcd-b374d2ee7b0e",
-                "c_id": "c3b596b7-0c45-43ea-bdcd-b374d2ee7b0e",
+                "c_id": "a3b596b7-0c45-43ea-bdcd-b374d2ee7b0e",
                 "name": "Arkon",
                 "race": "Dragonborn",
                 "classes": {
                     'Warlock': 1
                 },
-                "player": "Me"
+                "player": "Me",
+                "stats": {
+                    "str": 14
+                }
             }
         ],
         "campaign": [
             {
-                "c_id": "c3b596b7-0c45-43ea-bdcd-b374d2ee7b0e",
+                "c_id": "a3b596b7-0c45-43ea-bdcd-b374d2ee7b0e",
                 "name": "Swords"
             }
         ]
@@ -85,7 +102,13 @@ def add_data():
         monster_item.save()
         print('Added monster "{}" to the DB.'.format(monster[NAME_STR]))
 
+    print()
+
     for character in data[model.Character().Meta.table_name]:
+        for stat in [STR_SCORE, DEX_SCORE, CON_SCORE, INT_SCORE, WIS_SCORE, CHA_SCORE]:
+            if stat not in character['stats']:
+                character['stats'][stat] = None
+
         character_item = model.Character(
             pc_id=character['pc_id'],
             c_id=character['c_id'],
@@ -93,6 +116,12 @@ def add_data():
             player=character[PLAYER_STR],
             race=character[RACE_STR],
             classes=character[CLASSES_STR],
+            str=model.Ability(character['stats'][STR_SCORE]),
+            dex=model.Ability(character['stats'][DEX_SCORE]),
+            con=model.Ability(character['stats'][CON_SCORE]),
+            int=model.Ability(character['stats'][INT_SCORE]),
+            wis=model.Ability(character['stats'][WIS_SCORE]),
+            cha=model.Ability(character['stats'][CHA_SCORE]),
             update_time=time,
             create_time=time
         )

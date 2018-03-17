@@ -13,5 +13,17 @@
                 <br/>
             {% endfor %}
         </form>
+        Choose monsters:
+        <br/>
+        <form>
+            {% for monster in monsters %}
+                <label class="topcoat-checkbox">
+                    <input type="checkbox" name="players" value="{{ monster.name }}">
+                    <div class="topcoat-checkbox__checkmark"></div>
+                    {{ monster.name }}
+                </label>
+                <br/>
+            {% endfor %}
+        </form>
     </p>
 {% endblock %}
