@@ -1,3 +1,5 @@
+var $select
+
 function init_encounter_creator(){
     document.getElementById("content").innerHTML = `
         <p></p>
@@ -21,6 +23,7 @@ function init_encounter_creator(){
         </br>
         </br>
         <button class="btn btn-primary" id="save">Save encounter</button>
+        <button type="button" class="btn btn-secondary" onClick="clear_encounter();">Clear encounter</button>
     `;
 
     function get_selected_characters() {
@@ -146,7 +149,7 @@ function init_encounter_creator(){
 
     build_character_picker();
 
-    $('#select-monster-empty').selectize({
+    $select = $('#select-monster-empty').selectize({
         valueField: 'm_id',
         labelField: 'name',
         searchField: 'name',
@@ -217,4 +220,30 @@ function change_value(button, operation) {
     if (new_value >= 0) {
         input.value = new_value;
     }
+}
+
+function clear_characters() {
+    var div = document.getElementById('characters_div');
+    var inputs = div.getElementsByTagName('input');
+    for (i = 0; i < inputs.length; i++) {
+        if (inputs[i].checked) {
+            inputs[i].checked = false;
+        }
+    }
+}
+
+function clear_monsters() {
+    document.getElementById('monsters').innerHTML = "";
+}
+
+function clear_monster_picker() {
+    var control = $select[0].selectize;
+    control.clear();
+}
+
+function clear_encounter() {
+    clear_characters();
+    clear_monsters();
+    clear_monster_picker();
+    document.getElementById('encounter_name').value = ""
 }
