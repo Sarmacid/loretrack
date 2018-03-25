@@ -1,8 +1,7 @@
 from .loretrack import app
 from . import db, config
-from flask import render_template, jsonify
-#import db
-#import models
+from flask import render_template, jsonify, request, abort
+from .const import NAME_STR, C_ID_STR
 
 
 @app.route('/')
@@ -11,27 +10,61 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/locations')
-def locations():
-    locations = db.scan_table('Locations')
-    #print locations
-    return render_template('locations.html', locations=locations)
+@app.route('/campaign/api/v1.0/get_all', methods=['GET'])
+def get_all_campaigns():
+    c_list = [c.attribute_values for c in db.get_all_campaigns()]
+    return jsonify(c_list)
 
 
-@app.route('/location/<location_name>')
-def location(location_name):
-    Locations = models.Models().Locations()
-    location = db.get_record(Locations, location_name)
-    return render_template('location.html', location=location)
+@app.route('/encounter/api/v1.0/save', methods=['POST'])
+def save_encounter():
+    if not request.json:
+        abort(400)
+    elif request.json[NAME_STR] == '':
+        return jsonify({'Response': 'The encounter must have a name.'}), 404
+
+    if db.create_encounter(request.json):
+        return jsonify({'Response': 'Encounter "{}" saved.'.format(request.json[NAME_STR])}), 201
+    else:
+        return jsonify({'Response': 'An encounter with that name already exists.'}), 404
 
 
-@app.route('/combat')
-def combat():
+@app.route('/encounter/api/v1.0/get_all', methods=['POST'])
+def get_all_encounters():
+    """
+    if not request.json or E_ID_STR not in request.json or C_ID_STR not in request.json:
+        abort(400)
+    """
     c_id = config.get_option('CAMPAIGN_ID')
-    characters = db.get_characters(c_id)
-    monsters = db.get_monsters()
+    result = {
+        'Response': 'Success',
+        'Data': [c.attribute_values for c in db.get_all_encounters(c_id)]
+    }
 
-    return render_template('combat.html', title='Combat', characters=characters, monsters=monsters)
+    return jsonify(result)
+
+
+@app.route('/character/api/v1.0/get_all', methods=['POST'])
+def get_all_characters():
+    if not request.json or C_ID_STR not in request.json:
+        abort(400)
+
+    result = {
+        'Response': 'Success',
+        'Data': [c.to_dict() for c in db.get_all_characters(request.json[C_ID_STR])]
+    }
+
+    return jsonify(result)
+
+
+@app.route('/monster/api/v1.0/get_all', methods=['GET'])
+def get_all_monsters():
+    result = {
+        'Response': 'Success',
+        'Data': [m.attribute_values for m in db.get_all_monsters()]
+    }
+
+    return jsonify(result)
 
 
 @app.route('/character/<pc_id>')
@@ -39,6 +72,13 @@ def view_character(pc_id):
     c_id = config.get_option('CAMPAIGN_ID')
     character = db.get_single_character(c_id, pc_id)
     return jsonify(character.to_dict())
+
+
+@app.route('/monster/<m_id>')
+def view_monster(m_id):
+    monster = db.get_single_monster(m_id)
+    return jsonify(monster.to_dict())
+
 
 @app.errorhandler(404)
 def page_not_found(e):

@@ -1,13 +1,130 @@
 <html>
     <head>
-        <title>Loretrack</title>
-        <link href="{{ url_for('static', filename='css/topcoat-desktop-dark.css') }}" rel="stylesheet" type="text/css">
+        {% if title %}
+            <title>Loretrack - {{ title }}</title>
+        {% else %}
+            <title>Loretrack</title>
+        {% endif %}
+        <link href="{{ url_for('static', filename='css/bootstrap.css') }}" rel="stylesheet" type="text/css" media="all">
+        <link href="{{ url_for('static', filename='css/bootstrap-override.css') }}" rel="stylesheet" type="text/css" media="all">
+        <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/selectize.min.js') }}"></script>
+        <link href="{{ url_for('static', filename='css/selectize.dark.css') }}" rel="stylesheet" type="text/css" media="all">
     </head>
     <body>
-        <h1 class="title">
-            Loretrack
-        </h1>
-        <p>asdf</p>
+        <nav id="navbar" class="navbar navbar-expand-lg navbar-dark bg-primary">
+          <a class="navbar-brand" href="#">Loretrack</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor02" aria-controls="navbarColor02" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarColor02">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item dropdown">
+                    <a id="encounter_nav" class="nav-link dropdown-toggle active" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Encounter</a>
+                    <div class="dropdown-menu" x-placement="bottom-start" style="position: absolute; transform: translate3d(0px, 40px, 0px); top: 0px; left: 0px; will-change: transform;">
+                        <a class="dropdown-item" href="#" onclick="load_encounter_creator();">Create</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Monsters</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Characters</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Locations</a>
+                </li>
+            </ul>
+            <label>Campaign</label>
+            <div name="campaign_picker" id="campaign_picker" class="my-2 my-lg-0">
+                <select id='campaign_picker_select' class='custom-select'></select>
+            </div>
+          </div>
+        </nav>
+
+        <div class="container" id="content" >
+            Home
         </div>
+
+        <script>
+            function my_alert(message, color, title_text){
+                var existing_messages = document.getElementsByClassName("span_alert_" + color);
+                for (i = 0; i < existing_messages.length; i++) {
+                    if (message == existing_messages[i].innerHTML)
+                        return;
+                }
+                var alert_div = document.createElement("DIV");
+                alert_div.className = "alert alert-dismissible";
+                if (color == 'green'){
+                    alert_div.className = alert_div.className + " alert-success";
+                } else {
+                    alert_div.className = alert_div.className + " alert-danger";
+                }
+                alert_div.id = 'alert';
+                alert_div.style.cssText = "width: 80%; margin:0 auto;"
+                var close_button = document.createElement("BUTTON");
+                close_button.className = "close";
+                close_button.setAttribute( "data-dismiss", "alert" );
+                close_button.innerHTML = "&times;";
+                alert_div.appendChild(close_button);
+                if (title_text != '' & title_text != null){
+                    var title = document.createElement("STRONG");
+                    title.innerHTML = title_text;
+                    alert_div.appendChild(title);
+                    var newline = document.createElement("BR");
+                    alert_div.appendChild(newline);
+                }
+                var span = document.createElement("SPAN");
+                span.innerHTML = message;
+                span.className = "span_alert_" + color;
+                alert_div.appendChild(span);
+                document.getElementById('navbar').after(alert_div);
+            }
+
+            function get_campaign_id() {
+                return document.getElementById('campaign_picker_select').value;
+            }
+
+            $.ajax({
+                url: "/campaign/api/v1.0/get_all",
+                type: 'GET',
+                dataType: "json",
+                success: function(res) {
+                    for (i = 0; i < res.length; i++) {
+                        $('#campaign_picker_select').append(
+                            $("<option></option>")
+                                .text(res[i].name)
+                                .val(res[i].c_id)
+                        );
+                    }
+                }
+            });
+
+            function loadScript(url, callback){
+                var script = document.createElement("script")
+                script.type = "text/javascript";
+                script.onload = function(){
+                    callback();
+                };
+
+                script.src = url;
+                document.getElementsByTagName("head")[0].appendChild(script);
+            }
+
+            var loaded = "";
+
+            function load_encounter_creator(){
+                if (loaded == "load_encounter_creator") {
+                    return;
+                }
+
+                loadScript("{{ url_for('static', filename='js/pages/create_encounter.js') }}", function(){
+                    init_encounter_creator();
+                    loaded = "load_encounter_creator";
+                });
+            }
+        </script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
     </body>
 </html>

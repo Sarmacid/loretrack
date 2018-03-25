@@ -1,89 +1,7 @@
-import boto3
-#import config
-import json
-from datetime import datetime
-import dateutil.parser
 import uuid
-from . import model, config
-
-
-DATA_FILE = config.get_option('DATA_FILE')
-#UPDATE_STRING = config.get_option('UPDATE_STRING')
-#CREATE_STRING = config.get_option('CREATE_STRING')
-
-
-def schema():
-    schema = [
-        {
-            'TableName': 'Locations',
-            'KeySchema': [
-                {
-                    'AttributeName': 'location_name',
-                    'KeyType': 'HASH'
-                }
-            ],
-            'AttributeDefinitions': [
-                {
-                    'AttributeName': 'location_name',
-                    'AttributeType': 'S'
-                }
-            ],
-            'ProvisionedThroughput': {
-                'ReadCapacityUnits': 10,
-                'WriteCapacityUnits': 10
-            }
-        },
-        {
-            'TableName': 'Location_Types',
-            'KeySchema': [
-                {
-                    'AttributeName': 'location_type',
-                    'KeyType': 'HASH'
-                }
-            ],
-            'AttributeDefinitions': [
-                {
-                    'AttributeName': 'location_type',
-                    'AttributeType': 'S'
-                }
-            ],
-            'ProvisionedThroughput': {
-                'ReadCapacityUnits': 10,
-                'WriteCapacityUnits': 10
-            }
-        },
-        {
-            'TableName': 'Characters',
-            'KeySchema': [
-                {
-                    'AttributeName': 'name',
-                    'KeyType': 'HASH'
-                }
-            ],
-            'AttributeDefinitions': [
-                {
-                    'AttributeName': 'name',
-                    'AttributeType': 'S'
-                }
-            ],
-            'ProvisionedThroughput': {
-                'ReadCapacityUnits': 10,
-                'WriteCapacityUnits': 10
-            }
-        }
-    ]
-    return schema
-
-
-def load_data_from_file():
-    path = config.join_path(config.LORETRACK_DIR, DATA_FILE)
-    with open(path, 'r') as db_file:
-        data = json.load(db_file)
-
-    for table_name in data:
-        #print 'Inserting ' + str(len(data[table_name])) + ' records in table "' + table_name + '".'
-        for record in data[table_name]:
-            put_record(table_name, record)
+from datetime import datetime
+from . import model
+from .const import C_ID_STR, E_ID_STR, NAME_STR, UPDATE_TIME_STR, CREATE_TIME_STR
 
 
 def get_characters(c_id):
@@ -94,5 +12,42 @@ def get_single_character(c_id, pc_id):
     return model.Character().get(c_id, pc_id)
 
 
-def get_monsters():
+def get_all_monsters():
     return model.Monster().scan()
+
+
+def get_single_monster(m_id):
+    return model.Monster().get(m_id)
+
+
+def get_encounter(c_id, name):
+    try:
+        return model.Encounter().get(c_id, name)
+    except model.Encounter.DoesNotExist:
+        return False
+
+
+def create_encounter(data):
+    if get_encounter(data[C_ID_STR], data[NAME_STR]):
+        return False
+
+    time = datetime.utcnow()
+    data[E_ID_STR] = str(uuid.uuid4())
+    data[CREATE_TIME_STR] = time
+    data[UPDATE_TIME_STR] = time
+    encounter_item = model.Encounter(**data)
+    encounter_item.save()
+
+    return data[E_ID_STR]
+
+
+def get_all_encounters(c_id):
+    return model.Encounter().query(c_id)
+
+
+def get_all_characters(c_id):
+    return model.Character().query(c_id)
+
+
+def get_all_campaigns():
+    return model.Campaign().scan()

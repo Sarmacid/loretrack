@@ -1,0 +1,27 @@
+#Email, #Fname {
+    background-color:#333333 !important;
+}
+input, textarea, select{
+    background-color:#333333 !important;
+    color: #fefefe !important;
+    border-color: #555555 !important;
+    border-color: #555555 !important;
+}
+::-webkit-input-placeholder { /* WebKit browsers */
+    color: #999 !important;
+}
+:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+    color: #999 !important;
+}
+::-moz-placeholder { /* Mozilla Firefox 19+ */
+    color: #999 !important;
+}
+:-ms-input-placeholder { /* Internet Explorer 10+ */
+    color: #999 !important;
+}
+input::-webkit-input-placeholder, textarea::-webkit-input-placeholder {
+    color: #999 !important;
+}
+input:-moz-placeholder, textarea:-moz-placeholder {
+    color: #999 !important;
+}

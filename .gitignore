@@ -106,3 +106,6 @@ config/
 
 # Symlink
 bin/loretrack
+
+#Json files
+*.json
