@@ -7,10 +7,13 @@
         {% endif %}
         <link href="{{ url_for('static', filename='css/bootstrap.css') }}" rel="stylesheet" type="text/css" media="all">
         <link href="{{ url_for('static', filename='css/bootstrap-override.css') }}" rel="stylesheet" type="text/css" media="all">
+        <link href="{{ url_for('static', filename='css/selectize.dark.css') }}" rel="stylesheet" type="text/css" media="all">
+        <link href="{{ url_for('static', filename='css/chosen.min.css') }}" rel="stylesheet" type="text/css" media="all">
+        <link href="{{ url_for('static', filename='css/chosen-dark.css') }}" rel="stylesheet" type="text/css" media="all">
         <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
         <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/selectize.min.js') }}"></script>
-        <link href="{{ url_for('static', filename='css/selectize.dark.css') }}" rel="stylesheet" type="text/css" media="all">
+        <script type="text/javascript" src="{{ url_for('static', filename='js/chosen.jquery.min.js') }}"></script>
     </head>
     <body>
         <nav id="navbar" class="navbar navbar-expand-lg navbar-dark bg-primary">
@@ -20,14 +23,11 @@
           </button>
           <div class="collapse navbar-collapse" id="navbarColor02">
             <ul class="navbar-nav mr-auto">
-                <li class="nav-item dropdown">
-                    <a id="encounter_nav" class="nav-link dropdown-toggle active" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Encounter</a>
-                    <div class="dropdown-menu" x-placement="bottom-start" style="position: absolute; transform: translate3d(0px, 40px, 0px); top: 0px; left: 0px; will-change: transform;">
-                        <a class="dropdown-item" href="#" onclick="load_encounter_creator();">Create</a>
-                    </div>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="load_encounter_creator();">Encounters</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Monsters</a>
+                    <a class="nav-link" href="#" onclick="load_monsters();">Monsters</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">Characters</a>
@@ -124,6 +124,37 @@
                     loaded = "load_encounter_creator";
                 });
             }
+
+            function load_monsters(){
+                document.getElementById("content").innerHTML = `
+                    <p></p>
+                    <h3></h3>
+                    <select data-placeholder="Choose a monster..." id="select_monster" tabindex="1">
+                    </select>
+                `;
+
+                $.ajax({
+                    url: "/monster/api/v1.0/get_all",
+                    type: 'GET',
+                    dataType: "json",
+                    success: function (res) {
+                        $.each(res.Data, function(index, monster) {
+                             $('#select_monster')
+                                 .append($("<option></option>")
+                                            .attr("value",monster.m_id)
+                                            .text(monster.name));
+                        });
+                        $("#select_monster").chosen();
+                        $("#select_monster").on('change', function(evt, params) {
+                            console.log(params.selected);
+                        });
+                    },
+                    error: function() {
+                        my_alert(msg.responseJSON.Response, 'red', 'Oh no!');
+                    }
+                });
+            }
+            load_monsters();
         </script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
     </body>

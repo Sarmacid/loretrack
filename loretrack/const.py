@@ -1,5 +1,6 @@
 NAME_STR = 'name'
 C_ID_STR = 'c_id'
 E_ID_STR = 'e_id'
+M_ID_STR = 'm_id'
 UPDATE_TIME_STR = 'update_time'
 CREATE_TIME_STR = 'create_time'

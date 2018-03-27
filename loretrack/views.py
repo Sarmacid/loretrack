@@ -1,7 +1,7 @@
 from .loretrack import app
 from . import db, config
 from flask import render_template, jsonify, request, abort
-from .const import NAME_STR, C_ID_STR
+from .const import NAME_STR, C_ID_STR, M_ID_STR
 
 
 @app.route('/')
@@ -59,12 +59,37 @@ def get_all_characters():
 
 @app.route('/monster/api/v1.0/get_all', methods=['GET'])
 def get_all_monsters():
+    # Filter out attributes to return.
+    data = [{key: m.attribute_values[key] for key in [M_ID_STR, NAME_STR]} for m in db.get_all_monsters()]
     result = {
         'Response': 'Success',
-        'Data': [m.attribute_values for m in db.get_all_monsters()]
+        'Data': data
     }
 
     return jsonify(result)
+
+
+@app.route('/monster/api/v1.0/get', methods=['POST'])
+def get_monster():
+
+    if not request.json:
+        abort(400)
+    elif request.json[M_ID_STR] == '':
+        return jsonify({'Response': '"m_id" missing'}), 404
+
+    monster = db.get_monster(request.json[M_ID_STR])
+
+    result = {
+        'Response': 'Success',
+        'Data': monster.attribute_values
+    }
+
+    return jsonify(result)
+
+    if db.create_encounter(request.json):
+        return jsonify({'Response': 'Encounter "{}" saved.'.format(request.json[NAME_STR])}), 201
+    else:
+        return jsonify({'Response': 'An encounter with that name already exists.'}), 404
 
 
 @app.route('/character/<pc_id>')

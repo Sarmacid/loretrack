@@ -16,7 +16,7 @@ def get_all_monsters():
     return model.Monster().scan()
 
 
-def get_single_monster(m_id):
+def get_monster(m_id):
     return model.Monster().get(m_id)
 
 
