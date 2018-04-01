@@ -94,8 +94,8 @@ class Monster(Model):
                 d[key] = value
         return d
 
-    m_id = UnicodeAttribute(hash_key=True)
-    name = UnicodeAttribute()
+    m_id = UnicodeAttribute()
+    name = UnicodeAttribute(hash_key=True)
     size = UnicodeAttribute(null=True)
     type = UnicodeAttribute(null=True)
     subtype = UnicodeAttribute(null=True)

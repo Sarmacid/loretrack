@@ -49,35 +49,35 @@
 
         <script>
             function my_alert(message, color, title_text){
-                var existing_messages = document.getElementsByClassName("span_alert_" + color);
-                for (i = 0; i < existing_messages.length; i++) {
+                var existing_messages = document.getElementsByClassName('span_alert_' + color);
+                for (var i = 0; i < existing_messages.length; i++) {
                     if (message == existing_messages[i].innerHTML)
                         return;
                 }
-                var alert_div = document.createElement("DIV");
-                alert_div.className = "alert alert-dismissible";
+                var alert_div = document.createElement('DIV');
+                alert_div.className = 'alert alert-dismissible';
                 if (color == 'green'){
-                    alert_div.className = alert_div.className + " alert-success";
+                    alert_div.className = alert_div.className + ' alert-success';
                 } else {
-                    alert_div.className = alert_div.className + " alert-danger";
+                    alert_div.className = alert_div.className + ' alert-danger';
                 }
                 alert_div.id = 'alert';
-                alert_div.style.cssText = "width: 80%; margin:0 auto;"
-                var close_button = document.createElement("BUTTON");
-                close_button.className = "close";
-                close_button.setAttribute( "data-dismiss", "alert" );
-                close_button.innerHTML = "&times;";
+                alert_div.style.cssText = 'width: 80%; margin:0 auto;'
+                var close_button = document.createElement('BUTTON');
+                close_button.className = 'close';
+                close_button.setAttribute( 'data-dismiss', 'alert' );
+                close_button.innerHTML = '&times;';
                 alert_div.appendChild(close_button);
                 if (title_text != '' & title_text != null){
-                    var title = document.createElement("STRONG");
+                    var title = document.createElement('STRONG');
                     title.innerHTML = title_text;
                     alert_div.appendChild(title);
-                    var newline = document.createElement("BR");
+                    var newline = document.createElement('BR');
                     alert_div.appendChild(newline);
                 }
-                var span = document.createElement("SPAN");
+                var span = document.createElement('SPAN');
                 span.innerHTML = message;
-                span.className = "span_alert_" + color;
+                span.className = 'span_alert_' + color;
                 alert_div.appendChild(span);
                 document.getElementById('navbar').after(alert_div);
             }
@@ -87,13 +87,13 @@
             }
 
             $.ajax({
-                url: "/campaign/api/v1.0/get_all",
+                url: '/campaign/api/v1.0/get_all',
                 type: 'GET',
-                dataType: "json",
+                dataType: 'json',
                 success: function(res) {
                     for (i = 0; i < res.length; i++) {
                         $('#campaign_picker_select').append(
-                            $("<option></option>")
+                            $('<option></option>')
                                 .text(res[i].name)
                                 .val(res[i].c_id)
                         );
@@ -102,51 +102,71 @@
             });
 
             function loadScript(url, callback){
-                var script = document.createElement("script")
-                script.type = "text/javascript";
+                var script = document.createElement('script')
+                script.type = 'text/javascript';
                 script.onload = function(){
                     callback();
                 };
 
                 script.src = url;
-                document.getElementsByTagName("head")[0].appendChild(script);
+                document.getElementsByTagName('head')[0].appendChild(script);
             }
 
-            var loaded = "";
+            var loaded = '';
 
             function load_encounter_creator(){
-                if (loaded == "load_encounter_creator") {
+                if (loaded == 'load_encounter_creator') {
                     return;
                 }
 
-                loadScript("{{ url_for('static', filename='js/pages/create_encounter.js') }}", function(){
+                loadScript('{{ url_for('static', filename='js/pages/create_encounter.js') }}', function(){
                     init_encounter_creator();
-                    loaded = "load_encounter_creator";
+                    loaded = 'load_encounter_creator';
                 });
             }
 
             function load_monsters(){
-                document.getElementById("content").innerHTML = `
+                document.getElementById('content').innerHTML = `
                     <p></p>
                     <h3></h3>
-                    <select data-placeholder="Choose a monster..." id="select_monster" tabindex="1">
-                    </select>
+                    <div id="monster_select">
+                        <select data-placeholder="Choose a monster..." id="select_monster" tabindex="1">
+                        <option></option>
+                        </select>
+                    </div>
+                    </br>
+                    <div id="monster_details">
+                    </div>
                 `;
 
                 $.ajax({
-                    url: "/monster/api/v1.0/get_all",
+                    url: '/monster/api/v1.0/get_all',
                     type: 'GET',
-                    dataType: "json",
+                    dataType: 'json',
                     success: function (res) {
                         $.each(res.Data, function(index, monster) {
                              $('#select_monster')
-                                 .append($("<option></option>")
-                                            .attr("value",monster.m_id)
+                                 .append($('<option></option>')
+                                            .attr('value', monster.name)
                                             .text(monster.name));
                         });
-                        $("#select_monster").chosen();
-                        $("#select_monster").on('change', function(evt, params) {
-                            console.log(params.selected);
+                        $('#select_monster').chosen();
+                        $('#select_monster').on('change', function (evt, monster) {
+                            console.log(monster.selected);
+                            var data = {name: monster.selected};
+                            $.ajax({
+                                url: '/monster/api/v1.0/get',
+                                type: 'POST',
+                                dataType: 'json',
+                                contentType: 'application/json',
+                                data: JSON.stringify(data),
+                                success: function (res) {
+                                        create_monster_inputs(res.Data);
+                                },
+                                error: function() {
+                                    my_alert(msg.responseJSON.Response, 'red', 'Oh no!');
+                                }
+                            });
                         });
                     },
                     error: function() {
@@ -155,6 +175,153 @@
                 });
             }
             load_monsters();
+
+            function add_missing_property(div_id, property_name, property_title){
+                var div = document.getElementById(div_id);
+                var $label = $("<label>").text(property_title + ':');
+                var $input = $("<input>").addClass("form-control");
+                div.append($label[0]);
+                div.append($input[0]);
+                $('#' + property_name + '_button')[0].remove();
+            }
+            function create_monster_inputs(monster) {
+                    var div = document.getElementById('monster_details')
+                    div.innerHTML = `
+                    <div class="form-group">
+                        <h3>` + monster.name + `</h3>
+                        <label>Size:</label>
+                        <input class="form-control" type="text" value="` + monster.size + `">
+                        <label>Type:</label>
+                        <input class="form-control" type="text" value="` + monster.type + `">
+                        <label>Subtype:</label>
+                        <input class="form-control" type="text" value="` + monster.subtype + `">
+                        <label>Alignment:</label>
+                        <input class="form-control" type="text" value="` + monster.alignment + `">
+                        <label>Armor Class:</label>
+                        <input class="form-control" type="text" value="` + monster.ac + `">
+                        <label>Hit Points:</label>
+                        <input class="form-control" type="text" value="` + monster.hp + `">
+                        <input class="form-control" type="text" value="` + monster.hit_dice + `">
+                        <label>Speed:</label>
+                        <input class="form-control" type="text" value="` + monster.speed + `">
+                        <div id="ability_scores">
+                            <h3>Ability Scores</h3>
+                            <label>STR:</label>
+                            <input class="form-control" type="text" value="` + monster.str + `">
+                            <label>DEX:</label>
+                            <input class="form-control" type="text" value="` + monster.dex + `">
+                            <label>CON:</label>
+                            <input class="form-control" type="text" value="` + monster.con + `">
+                            <label>INT:</label>
+                            <input class="form-control" type="text" value="` + monster.int + `">
+                            <label>WIS:</label>
+                            <input class="form-control" type="text" value="` + monster.wis + `">
+                            <label>CHA:</label>
+                            <input class="form-control" type="text" value="` + monster.cha + `">
+                        </div>
+                        <div id="saving_throws">
+                        </div>
+                        <div id="skills">
+                        </div>
+                        <label>Damage Vulnerabilities:</label>
+                        <input class="form-control" type="text" value="` + monster.damage_vulnerabilities + `">
+                        <label>Damage Resistances:</label>
+                        <input class="form-control" type="text" value="` + monster.damage_resistances + `">
+                        <label>Damage Immunities:</label>
+                        <input class="form-control" type="text" value="` + monster.damage_immunities + `">
+                        <label>Condition Immunities:</label>
+                        <input class="form-control" type="text" value="` + monster.condition_immunities + `">
+                        <label>Senses:</label>
+                        <input class="form-control" type="text" value="` + monster.senses + `">
+                        <label>Languages:</label>
+                        <input class="form-control" type="text" value="` + monster.languages + `">
+                        <label>Challenge Rating:</label>
+                        <input class="form-control" type="text" value="` + monster.challenge_rating + `">
+                        <div id="actions">
+                        </div>
+                    </div>
+                    `
+                    var saving_throws_details = {
+                        property_names: {str_save: 'STR save',
+                            dex_save: 'DEX save',
+                            con_save: 'CON save',
+                            int_save: 'INT save',
+                            wis_save: 'WIS save',
+                            cha_save: 'CHA save'},
+                        div_id: 'saving_throws',
+                        title: 'Saving Throws'
+                    }
+                    display_properties(saving_throws_details, monster);
+
+                    var skills_details = {
+                        property_names: {
+                            acrobatics: 'Acrobatics',
+                            animal_handling: 'Animal Handling',
+                            arcana: 'Arcana',
+                            athletics: 'Athletics',
+                            deception: 'Deception',
+                            history: 'History',
+                            insight: 'Insight',
+                            intimidation: 'Intimidation',
+                            investigation: 'Investigation',
+                            medicine: 'Medicine',
+                            nature: 'Nature',
+                            perception: 'Perception',
+                            performance: 'Performance',
+                            persuasion: 'Persuasion',
+                            religion: 'Religion',
+                            sleight_of_hand: 'Sleight Of Hand',
+                            stealth: 'Stealth',
+                            survival: 'Survival'
+                        },
+                        div_id: 'skills',
+                        title: 'Skills'
+                    }
+                    display_properties(skills_details, monster);
+                    display_list(monster.actions);
+                }
+
+                //function display_properties(div_id, title, properties, monster){
+                function display_properties(details, monster){
+                    var div = document.getElementById(details.div_id)
+                    var content = "<h3>" + details.title + "</h3>";
+                    var missing = [];
+                    for (property in details.property_names) {
+                        if (typeof monster[property] !== "undefined") {
+                            content = content + `
+                            <label>` + details.property_names[property]  + `:</label>
+                            <input class="form-control" type="text" value="` + monster[property] + `">
+                            `
+                        } else {
+                            missing.push(property);
+                        }
+                    }
+                    div.innerHTML = content;
+
+                    for (var i = 0; i < missing.length; i++) {
+                        var button = $('<button type="button" id="' + missing[i] + '_button" class="btn btn-outline-success" onclick="add_missing_property(\'' + details.div_id + '\', \'' + missing[i] + '\', \'' + details.property_names[missing[i]] + '\');">Add ' + details.property_names[missing[i]] + '</button>')
+                        div.append(button[0]);
+                    }
+                    div.append($('</br>')[0]);
+                }
+
+                function display_list(list){
+                    console.log(list);
+                    var actions_div = document.getElementById('actions');
+                    var content = "<h3>" + "Actions" + "</h3>";
+                    for (var i = 0; i < list.length; i++) {
+                        content = content + `
+                            <div name="single_action">
+                                <h5>` + list[i].name  + `:</h5>
+                                <label>Description:</label>
+                                <input class="form-control" type="text" value="` + list[i].desc + `">
+                            </div>
+                        `
+                    }
+                    actions_div.innerHTML = content;
+                }
+
+
         </script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
     </body>

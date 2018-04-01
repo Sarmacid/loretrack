@@ -16,8 +16,11 @@ def get_all_monsters():
     return model.Monster().scan()
 
 
-def get_monster(m_id):
-    return model.Monster().get(m_id)
+def get_monster(name):
+    try:
+        return model.Monster().get(name)
+    except model.Monster.DoesNotExist:
+        return False
 
 
 def get_encounter(c_id, name):

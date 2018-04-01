@@ -74,10 +74,13 @@ def get_monster():
 
     if not request.json:
         abort(400)
-    elif request.json[M_ID_STR] == '':
-        return jsonify({'Response': '"m_id" missing'}), 404
+    elif NAME_STR not in request.json or request.json[NAME_STR] == '':
+        return jsonify({'Response': '"name" missing'}), 400
 
-    monster = db.get_monster(request.json[M_ID_STR])
+    monster = db.get_monster(request.json[NAME_STR])
+
+    if not monster:
+        return jsonify({'Response': 'Failure'}), 404
 
     result = {
         'Response': 'Success',
