@@ -184,8 +184,15 @@
                 div.append($input[0]);
                 $('#' + property_name + '_button')[0].remove();
             }
+
             function create_monster_inputs(monster) {
-                    var div = document.getElementById('monster_details')
+                    var div = document.getElementById('monster_details');
+                    console.log(monster.hp);
+                    var ac_desc = "";
+                    if (monster.ac.description) {
+                        ac_desc = monster.ac.description;
+                    }
+
                     div.innerHTML = `
                     <div class="form-group">
                         <h3>` + monster.name + `</h3>
@@ -193,15 +200,14 @@
                         <input class="form-control" type="text" value="` + monster.size + `">
                         <label>Type:</label>
                         <input class="form-control" type="text" value="` + monster.type + `">
-                        <label>Subtype:</label>
-                        <input class="form-control" type="text" value="` + monster.subtype + `">
                         <label>Alignment:</label>
                         <input class="form-control" type="text" value="` + monster.alignment + `">
                         <label>Armor Class:</label>
-                        <input class="form-control" type="text" value="` + monster.ac + `">
+                        <input class="form-control" type="text" value="` + monster.ac.value + `">
+                        <input class="form-control" type="text" value="` + ac_desc + `">
                         <label>Hit Points:</label>
-                        <input class="form-control" type="text" value="` + monster.hp + `">
-                        <input class="form-control" type="text" value="` + monster.hit_dice + `">
+                        <input class="form-control" type="text" value="` + monster.hp.value + `">
+                        <input class="form-control" type="text" value="` + monster.hp.hit_dice + `">
                         <label>Speed:</label>
                         <input class="form-control" type="text" value="` + monster.speed + `">
                         <div id="ability_scores">
@@ -306,17 +312,22 @@
                 }
 
                 function display_list(list){
-                    console.log(list);
                     var actions_div = document.getElementById('actions');
                     var content = "<h3>" + "Actions" + "</h3>";
                     for (var i = 0; i < list.length; i++) {
                         content = content + `
                             <div name="single_action">
-                                <h5>` + list[i].name  + `:</h5>
-                                <label>Description:</label>
-                                <input class="form-control" type="text" value="` + list[i].desc + `">
-                            </div>
+                            <h5>` + list[i].name  + `:</h5>
                         `
+                        for (entry in list[i]) {
+                            if (entry != 'name') {
+                                content = content + `
+                                <label>` + entry + `:</label>
+                                <input class="form-control" type="text" value="` + list[i][entry] + `">
+                                `
+                            }
+                        }
+                            content = content + '</div>'
                     }
                     actions_div.innerHTML = content;
                 }

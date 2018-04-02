@@ -67,6 +67,22 @@ def add_monsters(time):
         size = details.split(',')[0].split(' ')[0]
         type = ' '.join(''.join(details.split(',')[0:-1]).split(' ')[1:]).capitalize()
         alignment = details.split(',')[-1].strip().capitalize()
+
+        ac = {'value': monster['AC']['Value']}
+        armor_desc = '{}.'.format(monster['AC']['Notes'].translate({ord(i): None for i in '()'}).capitalize().strip())
+
+        if len(armor_desc) > 1:
+            ac['description'] = armor_desc
+
+        hp = {
+            'value': monster['HP']['Value'],
+            'hit_dice': monster['HP']['Notes'].translate({ord(i): None for i in '()'}).replace('+', ' + ')
+        }
+        armor_desc = '{}.'.format(monster['AC']['Notes'].translate({ord(i): None for i in '()'}).capitalize().strip())
+
+        if len(armor_desc) > 1:
+            ac['description'] = armor_desc
+
         speed = ', '.join(monster.get('Speed', None))
 
         damage_vulnerabilities = '{}.'.format(', '.join(monster.get('DamageVulnerabilities', None)).capitalize())
@@ -96,6 +112,7 @@ def add_monsters(time):
 
         #PynamoDB doesn't like empty fields.
         remove_empty_values(monster)
+        remove_empty_values(ac)
 
         monster_item = model.Monster(
             #m_id=str(uuid.uuid4()),
@@ -105,8 +122,8 @@ def add_monsters(time):
             source=monster.get('Source', None),
             type=type,
             alignment=alignment,
-            ac=monster.get('AC', None),
-            hp=monster.get('HP', None),
+            ac=ac,
+            hp=hp,
             speed=speed,
             abilities=monster.get('Abilities', None),
             saves=monster.get('Saves', None),
