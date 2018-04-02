@@ -84,15 +84,10 @@ def get_monster():
 
     result = {
         'Response': 'Success',
-        'Data': monster.attribute_values
+        'Data': monster.to_dict()
     }
 
     return jsonify(result)
-
-    if db.create_encounter(request.json):
-        return jsonify({'Response': 'Encounter "{}" saved.'.format(request.json[NAME_STR])}), 201
-    else:
-        return jsonify({'Response': 'An encounter with that name already exists.'}), 404
 
 
 @app.route('/character/<pc_id>')
@@ -104,7 +99,7 @@ def view_character(pc_id):
 
 @app.route('/monster/<m_id>')
 def view_monster(m_id):
-    monster = db.get_single_monster(m_id)
+    monster = db.get_monster(m_id)
     return jsonify(monster.to_dict())
 
 

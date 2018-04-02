@@ -50,7 +50,12 @@ class Character(Model):
             'ability': {}
         }
         for key in self.attribute_values:
+
             value = self.__getattribute__(key)
+
+            # Returned key will be class instead of _class
+            if key.startswith('_'):
+                key = key[1:]
 
             if isinstance(value, MapAttribute):
                 d[key] = value.as_dict()
@@ -66,7 +71,7 @@ class Character(Model):
     player = UnicodeAttribute()
     race = UnicodeAttribute()
     _class = MapAttribute()
-    str = PickleAttribute()
+    str = PickleAttribute(null=True)
     dex = PickleAttribute(null=True)
     con = PickleAttribute(null=True)
     int = PickleAttribute(null=True)
@@ -96,44 +101,16 @@ class Monster(Model):
 
     m_id = UnicodeAttribute()
     name = UnicodeAttribute(hash_key=True)
+    source = UnicodeAttribute(null=True)
     size = UnicodeAttribute(null=True)
     type = UnicodeAttribute(null=True)
-    subtype = UnicodeAttribute(null=True)
     alignment = UnicodeAttribute(null=True)
-    ac = NumberAttribute(null=True)
-    hp = NumberAttribute(null=True)
-    hit_dice = UnicodeAttribute(null=True)
+    ac = MapAttribute(null=True)
+    hp = MapAttribute(null=True)
     speed = UnicodeAttribute(null=True)
-    str = PickleAttribute(null=True)
-    dex = PickleAttribute(null=True)
-    con = PickleAttribute(null=True)
-    int = PickleAttribute(null=True)
-    wis = PickleAttribute(null=True)
-    cha = PickleAttribute(null=True)
-    str_save = NumberAttribute(null=True)
-    dex_save = NumberAttribute(null=True)
-    con_save = NumberAttribute(null=True)
-    int_save = NumberAttribute(null=True)
-    wis_save = NumberAttribute(null=True)
-    cha_save = NumberAttribute(null=True)
-    acrobatics = NumberAttribute(null=True)
-    animal_handling = NumberAttribute(null=True)
-    arcana = NumberAttribute(null=True)
-    athletics = NumberAttribute(null=True)
-    deception = NumberAttribute(null=True)
-    history = NumberAttribute(null=True)
-    insight = NumberAttribute(null=True)
-    intimidation = NumberAttribute(null=True)
-    investigation = NumberAttribute(null=True)
-    medicine = NumberAttribute(null=True)
-    nature = NumberAttribute(null=True)
-    perception = NumberAttribute(null=True)
-    performance = NumberAttribute(null=True)
-    persuasion = NumberAttribute(null=True)
-    religion = NumberAttribute(null=True)
-    sleight_of_hand = NumberAttribute(null=True)
-    stealth = NumberAttribute(null=True)
-    survival = NumberAttribute(null=True)
+    abilities = MapAttribute(null=True)
+    saves = ListAttribute(null=True)
+    skills = ListAttribute(null=True)
     damage_vulnerabilities = UnicodeAttribute(null=True)
     damage_resistances = UnicodeAttribute(null=True)
     damage_immunities = UnicodeAttribute(null=True)
